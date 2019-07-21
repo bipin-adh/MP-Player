@@ -16,6 +16,8 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -36,11 +38,62 @@ public class MainActivity extends AppCompatActivity {
     // to store local media files in a list
     ArrayList<Audio> audioList;
 
-    private void playAudio(String media) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        checkPermission();
+
+        if (!hasPermission) {
+            Log.d("aaa", "onCreate: " + hasPermission);
+        }
+        loadAudio();
+        initRecyclerView();
+        Log.d("song", "onCreate: song" + audioList.get(0).getData());
+        playAudio(audioList.get(0).getData());
+        // Binding this client to the audioplayer service
+        serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                // we've bound to LocalService , cast the IBinder and get LocalService instance
+                Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
+                MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+                player = binder.getService();
+                serviceBound = true;
+
+
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+
+                Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
+                serviceBound = false;
+            }
+        };
+    }
+
+    private void initRecyclerView(){
+        if(audioList.size()>0){
+            RecyclerView recyclerView = findViewById(R.id.recyclerview);
+            RecyclerViewAdapter adapter = new RecyclerViewAdapter(audioList,getApplication());
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+            recyclerView.addOnItemTouchListener(new CustomTouchListener(this, new onItemClickListener() {
+                @Override
+                public void onClick(View view, int index) {
+                    playAudio(index);
+                }
+            }));
+        }
+
+    }
+    private void playAudio(int audioIndex) {
         // check if service is active
         if (serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
-            playerIntent.putExtra("media", media);
+            playerIntent.putExtra("media", audioIndex);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
@@ -72,41 +125,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         cursor.close();
-    }
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        checkPermission();
-
-        if (!hasPermission) {
-            Log.d("aaa", "onCreate: " + hasPermission);
-        }
-        loadAudio();
-        Log.d("song", "onCreate: song" + audioList.get(0).getData());
-        playAudio(audioList.get(0).getData());
-        // Binding this client to the audioplayer service
-        serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                // we've bound to LocalService , cast the IBinder and get LocalService instance
-                Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
-                MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
-                player = binder.getService();
-                serviceBound = true;
-
-
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-
-                Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
-                serviceBound = false;
-            }
-        };
     }
 
 
