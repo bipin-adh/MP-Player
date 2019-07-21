@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.example.mpplayer.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.mpplayer.model.Audio;
+import com.example.mpplayer.R;
 
 import java.util.Collections;
 import java.util.List;

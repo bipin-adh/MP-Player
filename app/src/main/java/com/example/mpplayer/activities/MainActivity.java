@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.example.mpplayer.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -18,15 +18,23 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import com.example.mpplayer.model.Audio;
+import com.example.mpplayer.customlisteners.CustomTouchListener;
+import com.example.mpplayer.MediaPlayerService;
+import com.example.mpplayer.R;
+import com.example.mpplayer.adapters.RecyclerViewAdapter;
+import com.example.mpplayer.customlisteners.onItemClickListener;
+import com.example.mpplayer.utils.StorageUtil;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.mpplayer.PlayNewAudio";
     public static final String TAG = MainActivity.class.getSimpleName();
     public static int REQUEST_PERMISSION = 123;
     public boolean hasPermission = false;
@@ -50,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         loadAudio();
         initRecyclerView();
         Log.d("song", "onCreate: song" + audioList.get(0).getData());
-        playAudio(audioList.get(0).getData());
+//        playAudio(audioList.get(0).getData());
         // Binding this client to the audioplayer service
         serviceConnection = new ServiceConnection() {
             @Override
@@ -91,14 +99,25 @@ public class MainActivity extends AppCompatActivity {
     }
     private void playAudio(int audioIndex) {
         // check if service is active
-        if (serviceBound) {
+        if (!serviceBound) {
+            // store serializable audiolist to sharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudio(audioList);
+            storage.storeAudioIndex(audioIndex);
+
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             playerIntent.putExtra("media", audioIndex);
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
+            // store the new audioIndex to sharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            storage.storeAudioIndex(audioIndex);
             // service is active
             // send media with broadcast receiver
+            // send a broadcast to the service --> PLAY_NEW_AUDIO
+            Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadcastIntent);
         }
     }
 
