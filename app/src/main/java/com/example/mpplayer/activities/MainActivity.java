@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -14,12 +15,17 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.mpplayer.model.Audio;
@@ -38,10 +44,11 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static int REQUEST_PERMISSION = 123;
     public boolean hasPermission = false;
+    ImageView collapsingImageView;
 
     private MediaPlayerService player;
     boolean serviceBound = false;
-    private ServiceConnection serviceConnection;
+    int imageIndex = 0;
 
     // to store local media files in a list
     ArrayList<Audio> audioList;
@@ -50,35 +57,62 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
         checkPermission();
+
+        loadCollapsingImage(imageIndex);
 
         if (!hasPermission) {
             Log.d("aaa", "onCreate: " + hasPermission);
         }
         loadAudio();
         initRecyclerView();
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                playAudio("https://upload.wikimedia.org/wikipedia/commons/6/6c/Grieg_Lyric_Pieces_Kobold.ogg");
+                //play the first audio in the ArrayList
+//                playAudio(2);
+                if (imageIndex == 4) {
+                    imageIndex = 0;
+                    loadCollapsingImage(imageIndex);
+                } else {
+                    loadCollapsingImage(++imageIndex);
+                }
+            }
+        });
         Log.d("song", "onCreate: song" + audioList.get(0).getData());
-//        playAudio(audioList.get(0).getData());
-        // Binding this client to the audioplayer service
-        serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                // we've bound to LocalService , cast the IBinder and get LocalService instance
-                Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
-                MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
-                player = binder.getService();
-                serviceBound = true;
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
 
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-
-                Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
-                serviceBound = false;
-            }
-        };
+    private void loadCollapsingImage(int i) {
+        TypedArray array = getResources().obtainTypedArray(R.array.images);
+        collapsingImageView.setImageDrawable(array.getDrawable(i));
     }
 
     private void initRecyclerView(){
@@ -97,6 +131,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+    // Binding this client to the audioplayer service
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // we've bound to LocalService , cast the IBinder and get LocalService instance
+            Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
+            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+            player = binder.getService();
+            serviceBound = true;
+
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+            Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
+            serviceBound = false;
+        }
+    };
     private void playAudio(int audioIndex) {
         // check if service is active
         if (!serviceBound) {
