@@ -81,6 +81,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private int audioIndex = -1;
     private Audio activeAudio; //an object of the currently playing audio
 
+    public class MusicBinder extends Binder {
+        public MediaPlayerService getService() {
+            return MediaPlayerService.this;
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

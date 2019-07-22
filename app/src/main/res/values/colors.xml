@@ -10,5 +10,9 @@
     <color name="icons">#ffffff</color>
     <color name="divider">#b6b6b6</color>
     <color name="cardview_light_background">#00bcd4</color>
+    <color name="backgroundColor">#ffff</color>
+
+    <color name="tectColor">#000</color>
+    <color name="songTimerColor">#484848</color>
 
 </resources>

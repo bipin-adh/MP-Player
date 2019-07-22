@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,20 +26,27 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.mpplayer.model.Audio;
-import com.example.mpplayer.customlisteners.CustomTouchListener;
 import com.example.mpplayer.MediaPlayerService;
 import com.example.mpplayer.R;
 import com.example.mpplayer.adapters.RecyclerViewAdapter;
+import com.example.mpplayer.customlisteners.CustomTouchListener;
 import com.example.mpplayer.customlisteners.onItemClickListener;
+import com.example.mpplayer.model.Audio;
 import com.example.mpplayer.utils.StorageUtil;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
+    ImageButton like, notlike, dislike, notdislike;
+    ImageButton play, pause, play_main, pause_main;
+    private SlidingUpPanelLayout mLayout;
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.mpplayer.PlayNewAudio";
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -52,14 +60,88 @@ public class MainActivity extends AppCompatActivity {
 
     // to store local media files in a list
     ArrayList<Audio> audioList;
+    private boolean musicPlayerStatus = false;
+
+    MediaPlayerService mediaPlayerService;
+
+    private MediaPlayer mediaPlayer;
+
+    TextView songTitle, songArtistName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.home_screen_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        collapsingImageView = (ImageView) findViewById(R.id.collapsingImageView);
+        collapsingImageView = findViewById(R.id.collapsingImageView);
+        like = findViewById(R.id.imageButton2);
+        notlike = findViewById(R.id.imageButton2new);
+        dislike = findViewById(R.id.button);
+        notdislike = findViewById(R.id.buttontwo);
+        play = findViewById(R.id.play_button);
+        pause = findViewById(R.id.pause_button);
+        play_main = findViewById(R.id.play_button_main);
+        pause_main = findViewById(R.id.pause_button_main);
+
+        mLayout = findViewById(R.id.home_screen_main);
+
+        songTitle = findViewById(R.id.songs_title);
+        songArtistName = findViewById(R.id.songs_artist_name);
+
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                play.setVisibility(View.GONE);
+                pause.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "Song Is now Playing", Toast.LENGTH_SHORT).show();
+                if (play_main.getVisibility() == View.VISIBLE) {
+                    play_main.setVisibility(View.GONE);
+                    pause_main.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
+
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pause.setVisibility(View.GONE);
+                play.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "Song is Pause", Toast.LENGTH_SHORT).show();
+                if (pause_main.getVisibility() == View.VISIBLE) {
+                    pause_main.setVisibility(View.GONE);
+                    play_main.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        play_main.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                play_main.setVisibility(View.GONE);
+                pause_main.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "Song Is now Playing", Toast.LENGTH_SHORT).show();
+                if (play.getVisibility() == View.VISIBLE) {
+                    play.setVisibility(View.GONE);
+                    pause.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        pause_main.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pause_main.setVisibility(View.GONE);
+                play_main.setVisibility(View.VISIBLE);
+                Toast.makeText(MainActivity.this, "Song is Pause", Toast.LENGTH_SHORT).show();
+                if (pause.getVisibility() == View.VISIBLE) {
+                    pause.setVisibility(View.GONE);
+                    play.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         checkPermission();
 
         loadCollapsingImage(imageIndex);
@@ -69,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         }
         loadAudio();
         initRecyclerView();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -89,11 +171,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (mLayout != null &&
+                (mLayout.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED || mLayout.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED)) {
+            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -115,22 +208,37 @@ public class MainActivity extends AppCompatActivity {
         collapsingImageView.setImageDrawable(array.getDrawable(i));
     }
 
-    private void initRecyclerView(){
-        if(audioList.size()>0){
+    private void initRecyclerView() {
+        if (audioList.size() > 0) {
             RecyclerView recyclerView = findViewById(R.id.recyclerview);
-            RecyclerViewAdapter adapter = new RecyclerViewAdapter(audioList,getApplication());
+            RecyclerViewAdapter adapter = new RecyclerViewAdapter(audioList, getApplication());
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
             recyclerView.addOnItemTouchListener(new CustomTouchListener(this, new onItemClickListener() {
                 @Override
                 public void onClick(View view, int index) {
+
+                    songTitle.setText(audioList.get(index).getTitle());
+                    songArtistName.setText(audioList.get(index).getArtist());
+
                     playAudio(index);
+
+                    if (play_main.getVisibility() == View.VISIBLE) {
+                        play_main.setVisibility(View.GONE);
+                        pause_main.setVisibility(View.VISIBLE);
+                    }
+//                    if (mediaPlayer.isPlaying()) {
+//                        mediaPlayerService.pauseMedia();
+//                    } else {
+//                        mediaPlayerService.resumeMedia();
+//                    }
                 }
             }));
         }
 
     }
+
     // Binding this client to the audioplayer service
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -151,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
             serviceBound = false;
         }
     };
+
     private void playAudio(int audioIndex) {
         // check if service is active
         if (!serviceBound) {
@@ -175,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private void loadAudio() {
         ContentResolver contentResolver = getContentResolver();
 
@@ -191,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+
                 Audio audio = new Audio(data, title, album, artist);
 
                 // save to audiolist
