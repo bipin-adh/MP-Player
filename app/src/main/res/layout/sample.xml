@@ -350,10 +350,11 @@
                     app:layout_constraintHorizontal_bias="0.754"
                     app:layout_constraintStart_toEndOf="@+id/imageButton2"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="1.0" />
+                    app:layout_constraintVertical_bias="1.0"
+                    android:id="@+id/sliding_up_previous"/>
 
                 <ImageButton
-                    android:id="@+id/imageButton"
+                    android:id="@+id/sliding_up_next"
                     android:layout_width="55dp"
                     android:layout_height="55dp"
                     android:layout_marginBottom="8dp"

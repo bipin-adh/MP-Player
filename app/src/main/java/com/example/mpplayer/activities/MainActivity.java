@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     ImageButton like, notlike, dislike, notdislike;
     ImageButton play, pause, play_main, pause_main;
+    ImageButton slidingUpPreviousBtn,slidingUpNextBtn, slidingUpPlayBtn,slidingUpPauseBtn;
     private SlidingUpPanelLayout mLayout;
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.mpplayer.PlayNewAudio";
@@ -85,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
         pause_main = findViewById(R.id.pause_button_main);
 
         mLayout = findViewById(R.id.home_screen_main);
+        slidingUpPreviousBtn = (ImageButton)findViewById(R.id.sliding_up_previous);
+        slidingUpNextBtn=(ImageButton) findViewById(R.id.sliding_up_next);
+
+
 
         songTitle = findViewById(R.id.songs_title);
         songArtistName = findViewById(R.id.songs_artist_name);
@@ -116,6 +122,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        slidingUpPreviousBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_PREVIOUS);
+                startService(broadcastIntent);
+
+            }
+        });
+
+
+        slidingUpNextBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_NEXT);
+                startService(broadcastIntent);
+
+            }
+        });
         play_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -126,6 +152,10 @@ public class MainActivity extends AppCompatActivity {
                     play.setVisibility(View.GONE);
                     pause.setVisibility(View.VISIBLE);
                 }
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
+                startService(broadcastIntent);
+
             }
         });
 
@@ -139,6 +169,10 @@ public class MainActivity extends AppCompatActivity {
                     pause.setVisibility(View.GONE);
                     play.setVisibility(View.VISIBLE);
                 }
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
+                startService(broadcastIntent);
+
             }
         });
 
@@ -151,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
         }
         loadAudio();
         initRecyclerView();
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -248,7 +283,6 @@ public class MainActivity extends AppCompatActivity {
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
             player = binder.getService();
             serviceBound = true;
-
 
         }
 

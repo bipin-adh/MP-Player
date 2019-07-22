@@ -668,7 +668,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         return null;
     }
 
-    private void handleIncomingActions(Intent playbackAction) {
+    public void handleIncomingActions(Intent playbackAction) {
         if (playbackAction == null || playbackAction.getAction() == null) return;
 
         String actionString = playbackAction.getAction();
