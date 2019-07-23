@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
                 broadcastIntent.setAction(MediaPlayerService.ACTION_NEXT);
-                startService(broadcastIntent);
+                player.handleIncomingActions(broadcastIntent);
 
             }
         });
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        Log.d("song", "onCreate: song" + audioList.get(0).getData());
+    //    Log.d("song", "onCreate: song" + audioList.get(0).getData());
 
     }
 
@@ -304,7 +304,11 @@ public class MainActivity extends AppCompatActivity {
 
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             playerIntent.putExtra("media", audioIndex);
-            startService(playerIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(playerIntent);
+            }
+            else
+                startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
             // store the new audioIndex to sharedPreferences
@@ -326,9 +330,8 @@ public class MainActivity extends AppCompatActivity {
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
         Cursor cursor = contentResolver.query(uri, null, selection, null, sortOrder);
-
+        audioList = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
-            audioList = new ArrayList<>();
             while (cursor.moveToNext()) {
 
                 String data = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
