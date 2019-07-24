@@ -109,6 +109,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         super.onCreate();
         // Perform one-time setup procedures
 
+        createNotificationChannel();
+
         try {
 
             //Load data from SharedPreferences
@@ -181,6 +183,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mediaPlayer.start();
         }
         mediaReady = true;
+        if(mediaChangeListener!=null)
+            mediaChangeListener.onSongPlay();
     }
 
     private void stopMedia() {
@@ -198,6 +202,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             mediaPlayer.pause();
             resumePosition = mediaPlayer.getCurrentPosition();
         }
+        if(mediaChangeListener!=null)
+            mediaChangeListener.onSongPause();
     }
 
     private void resumeMedia() {
@@ -518,7 +524,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 super.onPlay();
                 resumeMedia();
                 buildNotification(PlaybackStatus.PLAYING);
-                mediaChangeListener.onSongPlay();
+
 
             }
 
@@ -527,7 +533,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 super.onPause();
                 pauseMedia();
                 buildNotification(PlaybackStatus.PAUSED);
-                mediaChangeListener.onSongPause();
 
             }
 
@@ -643,7 +648,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 R.drawable.image5); //replace with your own image
 
         // Create a new Notification
-        createNotificationChannel();
+
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setShowWhen(false)
                 // Set the Notification style
@@ -662,6 +667,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setContentText(activeAudio.getArtist())
                 .setContentTitle(activeAudio.getTitle())
                 .setContentInfo(activeAudio.getAlbum())
+                .setOnlyAlertOnce(true)
                 // Add playback actions
                 .addAction(android.R.drawable.ic_media_previous, "previous", playbackAction(3))
                 .addAction(notificationAction, "pause", play_pauseAction)

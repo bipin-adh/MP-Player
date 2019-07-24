@@ -11,6 +11,7 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -30,7 +31,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.mpplayer.MediaPlayerService;
 import com.example.mpplayer.R;
@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
 
     private Thread seekThread;
 
+//    SeekBarThread seekBarThread;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         play_main = findViewById(R.id.play_button_main);
         pause_main = findViewById(R.id.pause_button_main);
 
+
         mLayout = findViewById(R.id.home_screen_main);
         slidingUpPreviousBtn = (ImageButton) findViewById(R.id.sliding_up_previous);
         slidingUpNextBtn = (ImageButton) findViewById(R.id.sliding_up_next);
@@ -104,14 +107,17 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         seekBar = (SeekBar) findViewById(R.id.seekBar);
 
         storage = new StorageUtil(getApplicationContext());
+//        seekBarThread = new SeekBarThread();
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onSongPlay();
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
-                startService(broadcastIntent);
+                if (serviceBound) {
+                    onSongPlay();
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
+                    startService(broadcastIntent);
+                }
 
             }
         });
@@ -120,19 +126,23 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onSongPause();
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
-                startService(broadcastIntent);
+                if (serviceBound) {
+                    onSongPause();
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
+                    startService(broadcastIntent);
+                }
             }
         });
 
         slidingUpPreviousBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_PREVIOUS);
-                startService(broadcastIntent);
+                if (serviceBound) {
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_PREVIOUS);
+                    startService(broadcastIntent);
+                }
 
             }
         });
@@ -141,25 +151,23 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         slidingUpNextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_NEXT);
-                player.handleIncomingActions(broadcastIntent);
+                if (serviceBound) {
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_NEXT);
+                    player.handleIncomingActions(broadcastIntent);
+                }
 
             }
         });
         play_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                play_main.setVisibility(View.GONE);
-                pause_main.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, "Song Is now Playing", Toast.LENGTH_SHORT).show();
-                if (play.getVisibility() == View.VISIBLE) {
-                    play.setVisibility(View.GONE);
-                    pause.setVisibility(View.VISIBLE);
+                if (serviceBound) {
+                    onSongPlay();
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
+                    startService(broadcastIntent);
                 }
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
-                startService(broadcastIntent);
 
             }
         });
@@ -167,16 +175,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         pause_main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pause_main.setVisibility(View.GONE);
-                play_main.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, "Song is Pause", Toast.LENGTH_SHORT).show();
-                if (pause.getVisibility() == View.VISIBLE) {
-                    pause.setVisibility(View.GONE);
-                    play.setVisibility(View.VISIBLE);
+                if (serviceBound) {
+                    onSongPause();
+                    Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                    broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
+                    startService(broadcastIntent);
                 }
-                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
-                broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
-                startService(broadcastIntent);
 
             }
         });
@@ -221,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         String strMinute = Integer.toString(minute);
         String strSecond = Integer.toString(second);
         String strHour;
-        if (strMinute.length()< 2){
+        if (strMinute.length() < 2) {
             strMinute = "0" + minute;
         }
         if (strSecond.length() < 2) {
@@ -240,34 +244,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
                     @Override
                     public void run() {
                         Log.d(TAG, "run: IS BEFORE WHILE");
-                        try {
-                            Thread.sleep(1000);
 
-                            while (serviceBound) {
-                                final int endTimeInMs = player.getSongTimeDuration();
-                                final int currentTimeInMs = player.getCurrentMediaPosition();
-                                seekBar.setMax(endTimeInMs);
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    seekBar.setMin(0);
-                                }
-
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        endTime.setText(toTimeFormat(endTimeInMs));
-                                        currentTime.setText(toTimeFormat(currentTimeInMs));
-                                        seekBar.setProgress(currentTimeInMs);
-
-
-                                    }
-                                });
-                            }
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
 
                     }
                 });
@@ -346,12 +323,12 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // we've bound to LocalService , cast the IBinder and get LocalService instance
-            Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
             player = binder.getService();
             serviceBound = true;
             player.startMediaActionListener(MainActivity.this);
-            seekPosition();
+            new SeekBarAsync().execute();
 
 
         }
@@ -359,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
-            Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "Service Not Bound", Toast.LENGTH_SHORT).show();
             serviceBound = false;
         }
     };
@@ -515,6 +492,49 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerServic
         play.setVisibility(View.GONE);
         pause_main.setVisibility(View.VISIBLE);
         pause.setVisibility(View.VISIBLE);
+
+
+    }
+
+
+    private class SeekBarAsync extends AsyncTask<Void, Long, Long> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Long doInBackground(Void... voids) {
+
+            Long[] updateValues = new Long[2];
+            while (serviceBound) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                final int endTimeInMs = player.getSongTimeDuration();
+                final int currentTimeInMs = player.getCurrentMediaPosition();
+                seekBar.setMax(endTimeInMs);
+
+                updateValues[0] = Long.valueOf(endTimeInMs);
+                updateValues[1] = Long.valueOf(currentTimeInMs);
+                publishProgress(updateValues);
+            }
+
+            return null;
+        }
+
+
+        @Override
+        protected void onProgressUpdate(Long... values) {
+
+            endTime.setText(toTimeFormat(values[0].intValue()));
+            currentTime.setText(toTimeFormat(values[1].intValue()));
+            seekBar.setProgress(values[1].intValue());
+
+        }
 
 
     }
