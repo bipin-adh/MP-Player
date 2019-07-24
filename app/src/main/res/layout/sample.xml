@@ -258,7 +258,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/endTime"
                     app:layout_constraintVertical_bias="0.56" />
                 <TextView
-                    android:id="@+id/StartTime"
+                    android:id="@+id/currentTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
@@ -378,7 +378,7 @@
         </RelativeLayout>
 
         <SeekBar
-            android:id="@+id/seekBar3"
+            android:id="@+id/seekBar"
             android:layout_width="0dp"
             android:layout_height="24dp"
             android:layout_marginBottom="8dp"

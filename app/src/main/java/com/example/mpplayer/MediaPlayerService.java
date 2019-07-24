@@ -66,12 +66,26 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     //Used to pause/resume MediaPlayer
     private int resumePosition;
 
+
     private AudioManager audioManager;
 
     //Handle incoming phone calls
     private boolean ongoingCall = false;
     private PhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
+
+    public MediaChangeListener mediaChangeListener;
+    private boolean mediaReady;
+
+    public interface MediaChangeListener {
+        void onSongNext();
+
+        void onSongPause();
+
+        void onSongPrevious();
+
+        void onSongPlay();
+    }
 
 
     // list of available audio files
@@ -94,6 +108,36 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onCreate() {
         super.onCreate();
         // Perform one-time setup procedures
+
+        try {
+
+            //Load data from SharedPreferences
+            StorageUtil storage = new StorageUtil(getApplicationContext());
+            audioList = storage.loadAudio();
+            audioIndex = storage.loadAudioIndex();
+
+            if (audioIndex != -1 && audioIndex < audioList.size()) {
+                //index is in a valid range
+                activeAudio = audioList.get(audioIndex);
+            } else {
+                stopSelf();
+            }
+        } catch (NullPointerException e) {
+            stopSelf();
+        }
+
+        //Request audio focus
+        if (requestAudioFocus() == false) {
+            //Could not gain focus
+            stopSelf();
+        }
+
+        if (mediaSessionManager == null) {
+            initMediaSession();
+            initMediaPlayer();
+            buildNotification(PlaybackStatus.PLAYING);
+        }
+
 
         // Manage incoming phone calls during playback.
         // Pause MediaPlayer on incoming call,
@@ -136,6 +180,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
         }
+        mediaReady = true;
     }
 
     private void stopMedia() {
@@ -143,6 +188,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
+
+        mediaReady = false;
     }
 
 
@@ -177,6 +224,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onPrepared(MediaPlayer mp) {
         //  Invoked when the media source is ready for playback.
         playMedia();
+
     }
 
     @Override
@@ -292,38 +340,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     // The system calls this method when an activity requests the service to be started
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        try {
-
-            //Load data from SharedPreferences
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            audioList = storage.loadAudio();
-            audioIndex = storage.loadAudioIndex();
-
-            if (audioIndex != -1 && audioIndex < audioList.size()) {
-                //index is in a valid range
-                activeAudio = audioList.get(audioIndex);
-            } else {
-                stopSelf();
-            }
-        } catch (NullPointerException e) {
-            stopSelf();
-        }
-
-        //Request audio focus
-        if (requestAudioFocus() == false) {
-            //Could not gain focus
-            stopSelf();
-        }
-
-        if (mediaSessionManager == null) {
-            initMediaSession();
-            initMediaPlayer();
-            buildNotification(PlaybackStatus.PLAYING);
-        }
 
         //Handle Intent action from MediaSession.TransportControls
         handleIncomingActions(intent);
-        return super.onStartCommand(intent, flags, startId);
+
+        return START_NOT_STICKY;
+        // return super.onStartCommand(intent, flags, startId);
     }
 
 
@@ -411,6 +433,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             initMediaPlayer();
             updateMetaData();
             buildNotification(PlaybackStatus.PLAYING);
+            mediaChangeListener.onSongPlay();
         }
     };
 
@@ -495,14 +518,16 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 super.onPlay();
                 resumeMedia();
                 buildNotification(PlaybackStatus.PLAYING);
+                mediaChangeListener.onSongPlay();
+
             }
 
             @Override
             public void onPause() {
                 super.onPause();
-
                 pauseMedia();
                 buildNotification(PlaybackStatus.PAUSED);
+                mediaChangeListener.onSongPause();
 
             }
 
@@ -512,6 +537,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToNext();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
+                mediaChangeListener.onSongNext();
+
             }
 
             @Override
@@ -520,6 +547,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 skipToPrevious();
                 updateMetaData();
                 buildNotification(PlaybackStatus.PLAYING);
+                mediaChangeListener.onSongPrevious();
             }
 
             @Override
@@ -632,8 +660,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                 .setSmallIcon(android.R.drawable.stat_sys_headset)
                 // Set Notification content information
                 .setContentText(activeAudio.getArtist())
-                .setContentTitle(activeAudio.getAlbum())
-                .setContentInfo(activeAudio.getTitle())
+                .setContentTitle(activeAudio.getTitle())
+                .setContentInfo(activeAudio.getAlbum())
                 // Add playback actions
                 .addAction(android.R.drawable.ic_media_previous, "previous", playbackAction(3))
                 .addAction(notificationAction, "pause", play_pauseAction)
@@ -642,7 +670,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 //        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(NOTIFICATION_ID, notificationBuilder.build());
 
 
-        startForeground(1,notificationBuilder.build());
+        startForeground(1, notificationBuilder.build());
     }
 
     private void removeNotification() {
@@ -704,5 +732,27 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }
+    }
+
+    public int getSongTimeDuration() {
+        if (mediaReady)
+            return mediaPlayer.getDuration();
+
+        return -1;
+
+    }
+
+    public int getCurrentMediaPosition() {
+
+        if (mediaReady)
+            return mediaPlayer.getCurrentPosition();
+        return -1;
+
+
+    }
+
+    public void startMediaActionListener(MediaChangeListener mediaChangeListener) {
+        this.mediaChangeListener = mediaChangeListener;
+
     }
 }

@@ -26,9 +26,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,11 +43,12 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MediaPlayerService.MediaChangeListener {
 
+    SeekBar seekBar;
     ImageButton like, notlike, dislike, notdislike;
     ImageButton play, pause, play_main, pause_main;
-    ImageButton slidingUpPreviousBtn,slidingUpNextBtn, slidingUpPlayBtn,slidingUpPauseBtn;
+    ImageButton slidingUpPreviousBtn, slidingUpNextBtn, slidingUpPlayBtn, slidingUpPauseBtn;
     private SlidingUpPanelLayout mLayout;
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.example.mpplayer.PlayNewAudio";
@@ -69,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
 
     TextView songTitle, songArtistName;
+    TextView endTime, currentTime;
+    private StorageUtil storage;
+
+    private Thread seekThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,38 +92,38 @@ public class MainActivity extends AppCompatActivity {
         pause_main = findViewById(R.id.pause_button_main);
 
         mLayout = findViewById(R.id.home_screen_main);
-        slidingUpPreviousBtn = (ImageButton)findViewById(R.id.sliding_up_previous);
-        slidingUpNextBtn=(ImageButton) findViewById(R.id.sliding_up_next);
-
+        slidingUpPreviousBtn = (ImageButton) findViewById(R.id.sliding_up_previous);
+        slidingUpNextBtn = (ImageButton) findViewById(R.id.sliding_up_next);
 
 
         songTitle = findViewById(R.id.songs_title);
         songArtistName = findViewById(R.id.songs_artist_name);
 
+        endTime = (TextView) findViewById(R.id.endTime);
+        currentTime = (TextView) findViewById(R.id.currentTime);
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+
+        storage = new StorageUtil(getApplicationContext());
+
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                play.setVisibility(View.GONE);
-                pause.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, "Song Is now Playing", Toast.LENGTH_SHORT).show();
-                if (play_main.getVisibility() == View.VISIBLE) {
-                    play_main.setVisibility(View.GONE);
-                    pause_main.setVisibility(View.VISIBLE);
-                }
+                onSongPlay();
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_PLAY);
+                startService(broadcastIntent);
 
             }
         });
 
+
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pause.setVisibility(View.GONE);
-                play.setVisibility(View.VISIBLE);
-                Toast.makeText(MainActivity.this, "Song is Pause", Toast.LENGTH_SHORT).show();
-                if (pause_main.getVisibility() == View.VISIBLE) {
-                    pause_main.setVisibility(View.GONE);
-                    play_main.setVisibility(View.VISIBLE);
-                }
+                onSongPause();
+                Intent broadcastIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+                broadcastIntent.setAction(MediaPlayerService.ACTION_PAUSE);
+                startService(broadcastIntent);
             }
         });
 
@@ -201,7 +206,72 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    //    Log.d("song", "onCreate: song" + audioList.get(0).getData());
+        //    Log.d("song", "onCreate: song" + audioList.get(0).getData());
+
+
+    }
+
+    public String toTimeFormat(long millSecond) {
+        long duration = millSecond / 1000;
+        int hours = (int) duration / 3600;
+        int remainder = (int) duration - hours * 3600;
+        int minute = remainder / 60;
+        remainder = remainder - minute * 60;
+        int second = remainder;
+        String strMinute = Integer.toString(minute);
+        String strSecond = Integer.toString(second);
+        String strHour;
+        if (strMinute.length()< 2){
+            strMinute = "0" + minute;
+        }
+        if (strSecond.length() < 2) {
+            strSecond = "0" + second;
+        }
+        if (hours == 0) {
+            return strMinute + ":" + strSecond;
+        } else {
+            return hours + ":" + strMinute + ":" + strSecond;
+        }
+    }
+
+    private void seekPosition() {
+        seekThread = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "run: IS BEFORE WHILE");
+                        try {
+                            Thread.sleep(1000);
+
+                            while (serviceBound) {
+                                final int endTimeInMs = player.getSongTimeDuration();
+                                final int currentTimeInMs = player.getCurrentMediaPosition();
+                                seekBar.setMax(endTimeInMs);
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    seekBar.setMin(0);
+                                }
+
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        endTime.setText(toTimeFormat(endTimeInMs));
+                                        currentTime.setText(toTimeFormat(currentTimeInMs));
+                                        seekBar.setProgress(currentTimeInMs);
+
+
+                                    }
+                                });
+                            }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+        seekThread.start();
 
     }
 
@@ -258,11 +328,8 @@ public class MainActivity extends AppCompatActivity {
                     songArtistName.setText(audioList.get(index).getArtist());
 
                     playAudio(index);
+                    onSongPlay();
 
-                    if (play_main.getVisibility() == View.VISIBLE) {
-                        play_main.setVisibility(View.GONE);
-                        pause_main.setVisibility(View.VISIBLE);
-                    }
 //                    if (mediaPlayer.isPlaying()) {
 //                        mediaPlayerService.pauseMedia();
 //                    } else {
@@ -283,6 +350,9 @@ public class MainActivity extends AppCompatActivity {
             MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
             player = binder.getService();
             serviceBound = true;
+            player.startMediaActionListener(MainActivity.this);
+            seekPosition();
+
 
         }
 
@@ -294,32 +364,32 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    //Set Song from recyclerview's items
     private void playAudio(int audioIndex) {
         // check if service is active
+        storage.storeAudio(audioList);
+        storage.storeAudioIndex(audioIndex);
+
         if (!serviceBound) {
             // store serializable audiolist to sharedPreferences
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudio(audioList);
-            storage.storeAudioIndex(audioIndex);
-
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             playerIntent.putExtra("media", audioIndex);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(playerIntent);
-            }
-            else
+            } else
                 startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
             // store the new audioIndex to sharedPreferences
-            StorageUtil storage = new StorageUtil(getApplicationContext());
-            storage.storeAudioIndex(audioIndex);
             // service is active
             // send media with broadcast receiver
             // send a broadcast to the service --> PLAY_NEW_AUDIO
             Intent broadcastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
             sendBroadcast(broadcastIntent);
+
         }
+
+
     }
 
 
@@ -372,13 +442,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
 
         if (serviceBound) {
             unbindService(serviceConnection);
             // service is active
             player.stopSelf();
         }
+        super.onDestroy();
+
     }
 
     @Override
@@ -412,5 +483,39 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "checkPermission: " + hasPermission);
             hasPermission = true;
         }
+    }
+
+
+    @Override
+    public void onSongNext() {
+        Audio audio = audioList.get(storage.loadAudioIndex());
+        songArtistName.setText(audio.getArtist());
+        songTitle.setText(audio.getTitle());
+
+    }
+
+    @Override
+    public void onSongPause() {
+        play_main.setVisibility(View.VISIBLE);
+        play.setVisibility(View.VISIBLE);
+        pause_main.setVisibility(View.GONE);
+        pause.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onSongPrevious() {
+        Audio audio = audioList.get(storage.loadAudioIndex());
+        songArtistName.setText(audio.getArtist());
+        songTitle.setText(audio.getTitle());
+    }
+
+    @Override
+    public void onSongPlay() {
+        play_main.setVisibility(View.GONE);
+        play.setVisibility(View.GONE);
+        pause_main.setVisibility(View.VISIBLE);
+        pause.setVisibility(View.VISIBLE);
+
+
     }
 }
