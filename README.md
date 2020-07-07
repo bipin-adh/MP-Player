@@ -1,3 +1,3 @@
 # MP-Player
-A simple Android Music Player with slide-up panel.
+A simple Android Music Player with material design user interface and slide-up panel.
 
