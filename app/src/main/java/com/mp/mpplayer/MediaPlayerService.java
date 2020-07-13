@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.mp.mpplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -26,9 +26,10 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.example.mpplayer.activities.MainActivity;
-import com.example.mpplayer.model.Audio;
-import com.example.mpplayer.utils.StorageUtil;
+import com.mp.mpplayer.R;
+import com.mp.mpplayer.activities.MainActivity;
+import com.mp.mpplayer.model.Audio;
+import com.mp.mpplayer.utils.StorageUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;

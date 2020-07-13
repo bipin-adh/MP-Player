@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities;
+package com.mp.mpplayer.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -30,13 +30,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.example.mpplayer.MediaPlayerService;
-import com.example.mpplayer.R;
-import com.example.mpplayer.customlisteners.AudioListsProvider;
-import com.example.mpplayer.model.Album;
-import com.example.mpplayer.model.Artist;
-import com.example.mpplayer.model.Audio;
-import com.example.mpplayer.utils.StorageUtil;
+
+import com.mp.mpplayer.R;
+
+import com.mp.mpplayer.MediaPlayerService;
+import com.mp.mpplayer.customlisteners.AudioListsProvider;
+import com.mp.mpplayer.model.Album;
+import com.mp.mpplayer.model.Artist;
+import com.mp.mpplayer.model.Audio;
+import com.mp.mpplayer.utils.StorageUtil;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;

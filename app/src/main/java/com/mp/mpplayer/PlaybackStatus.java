@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.mp.mpplayer;
 
 public enum PlaybackStatus {
     PLAYING,

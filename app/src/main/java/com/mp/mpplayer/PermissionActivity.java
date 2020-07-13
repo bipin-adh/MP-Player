@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.mp.mpplayer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

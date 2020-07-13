@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities;
+package com.mp.mpplayer.activities;
 
 
 import android.content.Context;
@@ -14,15 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import com.example.mpplayer.R;
-import com.example.mpplayer.activities.fragments.AlbumsFragment;
-import com.example.mpplayer.activities.fragments.ArtistsFragment;
-import com.example.mpplayer.activities.fragments.TracksFragment;
-import com.example.mpplayer.customlisteners.AudioListsProvider;
-import com.example.mpplayer.model.Album;
-import com.example.mpplayer.model.Artist;
-import com.example.mpplayer.model.Audio;
+import com.mp.mpplayer.R;
+
 import com.google.android.material.tabs.TabLayout;
+import com.mp.mpplayer.activities.fragments.AlbumsFragment;
+import com.mp.mpplayer.activities.fragments.ArtistsFragment;
+import com.mp.mpplayer.activities.fragments.TracksFragment;
+import com.mp.mpplayer.customlisteners.AudioListsProvider;
+import com.mp.mpplayer.model.Album;
+import com.mp.mpplayer.model.Artist;
+import com.mp.mpplayer.model.Audio;
 
 import java.util.ArrayList;
 import java.util.List;

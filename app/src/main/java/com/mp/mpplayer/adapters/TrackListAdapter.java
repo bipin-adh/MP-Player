@@ -1,10 +1,4 @@
-package com.example.mpplayer.adapters;
-
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.RecyclerView;
+package com.mp.mpplayer.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +7,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.mpplayer.activities.MainActivity;
-import com.example.mpplayer.customlisteners.ListItemClickListener;
-import com.example.mpplayer.model.Audio;
-import com.example.mpplayer.R;
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.mp.mpplayer.R;
+import com.mp.mpplayer.customlisteners.ListItemClickListener;
+import com.mp.mpplayer.model.Audio;
 
 import java.util.Collections;
 import java.util.List;

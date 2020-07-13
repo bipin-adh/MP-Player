@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities.fragments;
+package com.mp.mpplayer.activities.fragments;
 
 
 import android.os.Bundle;
@@ -13,11 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.mpplayer.R;
-import com.example.mpplayer.activities.MainActivity;
-import com.example.mpplayer.adapters.TrackListAdapter;
-import com.example.mpplayer.customlisteners.ListItemClickListener;
-import com.example.mpplayer.model.Audio;
+import com.mp.mpplayer.R;
+import com.mp.mpplayer.activities.MainActivity;
+import com.mp.mpplayer.adapters.TrackListAdapter;
+import com.mp.mpplayer.customlisteners.ListItemClickListener;
+import com.mp.mpplayer.model.Audio;
 
 import java.util.ArrayList;
 
@@ -61,6 +61,6 @@ public class TrackListViewFragment extends Fragment implements ListItemClickList
 
     @Override
     public void onItemClick(int position) {
-        ((MainActivity)getActivity()).setNowPlaying(audioList,position);
+        ((MainActivity) getActivity()).setNowPlaying(audioList, position);
     }
 }

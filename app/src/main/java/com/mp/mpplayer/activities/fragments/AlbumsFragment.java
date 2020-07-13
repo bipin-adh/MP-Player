@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities.fragments;
+package com.mp.mpplayer.activities.fragments;
 
 
 import android.content.ContentResolver;
@@ -19,13 +19,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.mpplayer.R;
-import com.example.mpplayer.activities.MainActivity;
-import com.example.mpplayer.adapters.AlbumListAdapter;
-import com.example.mpplayer.customlisteners.AudioListsProvider;
-import com.example.mpplayer.customlisteners.ListItemClickListener;
-import com.example.mpplayer.model.Album;
-import com.example.mpplayer.model.Audio;
+import com.mp.mpplayer.R;
+import com.mp.mpplayer.activities.MainActivity;
+import com.mp.mpplayer.adapters.AlbumListAdapter;
+import com.mp.mpplayer.customlisteners.AudioListsProvider;
+import com.mp.mpplayer.customlisteners.ListItemClickListener;
+import com.mp.mpplayer.model.Album;
+import com.mp.mpplayer.model.Audio;
 
 import java.util.ArrayList;
 import java.util.Collection;

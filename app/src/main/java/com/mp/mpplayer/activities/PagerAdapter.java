@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities;
+package com.mp.mpplayer.activities;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;

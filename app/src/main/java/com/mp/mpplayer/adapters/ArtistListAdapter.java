@@ -1,4 +1,4 @@
-package com.example.mpplayer.adapters;
+package com.mp.mpplayer.adapters;
 
 import android.content.Context;
 
@@ -13,10 +13,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.mpplayer.R;
-import com.example.mpplayer.activities.MainActivity;
-import com.example.mpplayer.customlisteners.ListItemClickListener;
-import com.example.mpplayer.model.Artist;
+import com.mp.mpplayer.R;
+import com.mp.mpplayer.customlisteners.ListItemClickListener;
+import com.mp.mpplayer.model.Artist;
+
 
 import java.util.Collections;
 import java.util.List;

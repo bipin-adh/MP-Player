@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.mp.mpplayer;
 
 import org.junit.Test;
 

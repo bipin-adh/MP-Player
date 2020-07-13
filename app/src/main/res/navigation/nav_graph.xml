@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.example.mpplayer.activities.MainFragment"
+        android:name="com.mp.mpplayer.activities.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/trackListViewFragment"
-        android:name="com.example.mpplayer.activities.fragments.TrackListViewFragment"
+        android:name="com.mp.mpplayer.activities.fragments.TrackListViewFragment"
         android:label="fragment_track_list_view"
         tools:layout="@layout/fragment_track_list_view" />
 </navigation>

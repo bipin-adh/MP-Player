@@ -1,4 +1,4 @@
-package com.example.mpplayer.customlisteners;
+package com.mp.mpplayer.customlisteners;
 
 import android.content.Context;
 import androidx.annotation.NonNull;

@@ -1,4 +1,4 @@
-package com.example.mpplayer.activities;
+package com.mp.mpplayer.activities;
 
 import android.content.Intent;
 import android.os.Handler;

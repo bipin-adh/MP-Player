@@ -1,4 +1,4 @@
-package com.example.mpplayer;
+package com.mp.mpplayer;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;

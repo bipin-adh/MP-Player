@@ -1,4 +1,4 @@
-package com.example.mpplayer.customlisteners;
+package com.mp.mpplayer.customlisteners;
 
 public interface ListItemClickListener {
 

@@ -1,4 +1,4 @@
-package com.example.mpplayer.model;
+package com.mp.mpplayer.model;
 
 import java.io.Serializable;
 

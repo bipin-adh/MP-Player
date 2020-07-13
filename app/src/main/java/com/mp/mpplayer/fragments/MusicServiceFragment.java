@@ -1,4 +1,4 @@
-package com.example.mpplayer.fragments;
+package com.mp.mpplayer.fragments;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import android.util.Log;
 
-import com.example.mpplayer.MediaPlayerService;
+import com.mp.mpplayer.MediaPlayerService;
 
 public abstract class MusicServiceFragment extends Fragment {
     public static final String TAG = "MusicServiceFragment";
