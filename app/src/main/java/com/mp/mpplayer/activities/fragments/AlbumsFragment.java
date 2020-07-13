@@ -6,6 +6,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,13 +18,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.MediaStore;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.mp.mpplayer.R;
-import com.mp.mpplayer.activities.MainActivity;
 import com.mp.mpplayer.adapters.AlbumListAdapter;
 import com.mp.mpplayer.customlisteners.AudioListsProvider;
 import com.mp.mpplayer.customlisteners.ListItemClickListener;
@@ -28,10 +26,6 @@ import com.mp.mpplayer.model.Album;
 import com.mp.mpplayer.model.Audio;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.function.Predicate;
 
 /**
  * A simple {@link Fragment} subclass.

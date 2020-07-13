@@ -8,7 +8,7 @@
     android:gravity="bottom"
     app:umanoPanelHeight="70dp"
     app:umanoShadowHeight="5dp"
-    tools:context=".activities.MainActivity">
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"

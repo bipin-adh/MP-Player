@@ -59,6 +59,6 @@ public class TracksFragment extends Fragment implements ListItemClickListener {
 
     @Override
     public void onItemClick(int position) {
-        ((MainActivity) getActivity()).setNowPlaying(audioList, position);
+//        ((MainActivity) getActivity()).setNowPlaying(audioList, position);
     }
 }

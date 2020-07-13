@@ -61,6 +61,6 @@ public class TrackListViewFragment extends Fragment implements ListItemClickList
 
     @Override
     public void onItemClick(int position) {
-        ((MainActivity) getActivity()).setNowPlaying(audioList, position);
+//        ((MainActivity) getActivity()).setNowPlaying(audioList, position);
     }
 }

@@ -5,14 +5,12 @@
     android:id="@+id/activity_main_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".activities.MainActivity">
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".activities.MainActivity"
         tools:showIn="@layout/fragment_tracks">
 
         <androidx.recyclerview.widget.RecyclerView
