@@ -1,0 +1,7 @@
+[packages]
+com.mp.mpplayer = raa
+
+[localazy]
+allStringsUploaded = true
+showWelcomeMessage = false
+
